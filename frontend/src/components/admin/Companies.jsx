@@ -16,7 +16,7 @@ const Companies = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     useEffect(() => {
-        dispatch(setSearchCompanyByText(input))
+        dispatch(setSearchCompanyByText(input));
     },[input]);
   return (
     <div>
@@ -32,7 +32,6 @@ const Companies = () => {
             </div>
             <CompaniesTable/>
         </div>
-
     </div>
   )
 }
