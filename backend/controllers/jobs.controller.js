@@ -33,6 +33,10 @@ export const postJob = async (req, res) => {
 
     } catch (error) {
         console.log(error)
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+        });
     }
 }
 // for student
@@ -62,6 +66,10 @@ export const getAllJobs = async (req, res) => {
         })
     } catch (error) {
         console.log(error)
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+        });
     }
 }
 // for student 
@@ -84,6 +92,10 @@ export const getJobById = async (req, res) => {
         })
     } catch (error) {
         console.log(error)
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+        });
     }
 }
 
@@ -91,7 +103,10 @@ export const getJobById = async (req, res) => {
 export const getAdminJobs = async (req, res) => {
     try {
         const adminId = req.id;
-        const jobs = await Job.find({ created_by: adminId });
+        const jobs = await Job.find({ created_by: adminId })
+            .populate({
+                path:"company"
+            }).sort({createdAt: -1 });
 
         if (!jobs) {
             return res.status(404).json({
@@ -104,6 +119,11 @@ export const getAdminJobs = async (req, res) => {
             success: true
         })
     } catch (error) {
-        console.log(error)
+        console.log(error);
+        return res.status(500).json({
+            message: error.message,
+            success: false,
+        });
+        
     }
 }

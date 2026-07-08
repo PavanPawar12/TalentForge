@@ -1,9 +1,9 @@
 import React from 'react'
-import { COMPANY_API_END_POINT } from '../components/utils/constant'
+import { COMPANY_API_END_POINT } from '../components/utils/constant.js'
 import { useEffect } from 'react'
 import axios from 'axios'
 import { useDispatch } from 'react-redux'
-import { setCompanies, setSingleCompany } from '../redux/companySclice'
+import { setCompanies } from '../redux/companySclice.js'
 const useGetAllCompanies = (companyId) => {
 
     const dispatch = useDispatch();
@@ -14,9 +14,8 @@ const useGetAllCompanies = (companyId) => {
                 if(res.data.success) {
                     dispatch(setCompanies(res.data.companies));
                 }
-
             } catch (error) {
-                console.log(error)
+                console.log(error);
             }
         }
         fetchCompanies();

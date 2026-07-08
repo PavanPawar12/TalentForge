@@ -43,7 +43,7 @@ const Navbar = () => {
     <div className='bg-white'>
       <div className='flex items-center justify-around mx-auto max-w-7xl h-16'>
         <div>
-          <Link to="/" className='text-2xl font-bold'> TalentForge <span className='text-[#f83002]'>Forge</span></Link>
+          <Link to="/" className='text-2xl font-bold'> Talent <span className='text-[#f83002]'>Forge</span></Link>
         </div>
         <div>
           <ul className='flex font-medium items-center gap-5'>

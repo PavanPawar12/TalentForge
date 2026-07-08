@@ -4,15 +4,17 @@ import { Button } from '../ui/button'
 import { ArrowLeft } from 'lucide-react'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
-import { COMPANY_API_END_POINT } from '../utils/constant'
+import { COMPANY_API_END_POINT } from '../utils/constant.js'
 import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { useSelector } from 'react-redux'
+import useGetCompanyById from '@/hooks/useGetCompanyById';
 const CompanySetup = () => {
   // const [companyName, setCompanyName] = useState("");
   const params = useParams();
   // useGet
+  useGetCompanyById(params.id)
   const [input, setInput] = useState({
     name: "",
     description: "",
@@ -72,11 +74,11 @@ const CompanySetup = () => {
 
   useEffect(() => {
     setInput({
-      name: singleCompany.name || "",
-      description: singleCompany.description ||  "",
-      website:singleCompany.website ||  "",
-      location: singleCompany.location ||  "",
-      file: singleCompany.file ||  null // if needed
+      name: singleCompany?.name || "",
+      description: singleCompany?.description ||  "",
+      website:singleCompany?.website ||  "",
+      location: singleCompany?.location ||  "",
+      file: singleCompany?.file ||  null // if needed
     })
   },[singleCompany])
 
