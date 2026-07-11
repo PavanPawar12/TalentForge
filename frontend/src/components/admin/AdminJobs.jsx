@@ -28,7 +28,7 @@ const AdminJobs = () => {
                     placeholder="filter by role"
                     onChange={(e) => setInput(e.target.value)}
                 />
-                <Button onClick={() => navigate("/admin/companies/create")}>New Jobs</Button>
+                <Button onClick={() => navigate("/admin/jobs/create")}>New Jobs</Button>
             </div>
             <AdminJobTable/>
         </div>

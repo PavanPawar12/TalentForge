@@ -24,7 +24,9 @@ const AdminJobTable = () => {
   const { searchCompanyByText } = useSelector((store) => store.company);
   const [filterJobs, setFilterJobs] = useState([]);
 
-  console.log(allAdminJobs);
+  console.log(searchCompanyByText)
+  
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,6 +38,7 @@ const AdminJobTable = () => {
         .includes(searchCompanyByText.toLowerCase());
     });
     
+
     setFilterJobs(filteredJobs);
     }, [allAdminJobs, searchCompanyByText]);
     console.log(allAdminJobs);

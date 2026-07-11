@@ -36,7 +36,7 @@ const appRouter = createBrowserRouter([
     element:<JobDescription/>
   },
   {
-    path:'/brows',
+    path:'/browse',
     element:<Brows/>
   },
   {
