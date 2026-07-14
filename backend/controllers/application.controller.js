@@ -101,7 +101,7 @@ export const getApplicants = async (req, res) => {
         }
         return res.status(200).json({
             job,
-            success: false
+            success: true
         });
         
         
