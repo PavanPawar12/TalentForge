@@ -5,6 +5,10 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
 import { useSelector } from 'react-redux'
+import axios from 'axios'
+import { JOB_API_END_POINT } from '../utils/constant.js'
+import { toast } from 'sonner'
+import { useNavigate } from 'react-router-dom'
 
 const PostJob = () => {
     const [input, setInput] = useState({
@@ -18,6 +22,7 @@ const PostJob = () => {
         position: 0,
         companyId: ""
     })
+    const navigation = useNavigate()
     const { companies } = useSelector(store => store.company);
     const changeEventHandler = (e) => {
         setInput({ ...input, [e.target.name]: e.target.value });
@@ -27,13 +32,31 @@ const PostJob = () => {
         const selectCompany = companies.find((company) => company.name.toLowerCase() === value);
         setInput({...input, companyId: selectedCompany._id}); 
     }
+    const submitHandler = async(e) => {
+        e.preventDefault();
+        try {
+            const res = await axios.post(`${JOB_API_END_POINT}/post`, input, {
+                headers:{
+                    "Content-Type": "application/json"
+                },
+                withCredentials:true,
+            });
+            
+            console.log(res)
+            if(res.data.success) {
+                toast.success(res.data.masssage);
+                navigation("/admin/jobs")
+            }
+        } catch (error) {
+            console.log(error);
+            toast.error(error.response?.data?.message || "Something went wrong")
+        }
+    }
     return (
         <div>
             <Navbar />
             <div className='flex items-center justify-center w-screen my-5'>
-                <form action="" className='p-8 max-w-4xl border border-gray-200 shadow-lg rounded-md'>
-
-
+                <form onSubmit={submitHandler} className='p-8 max-w-4xl border border-gray-200 shadow-lg rounded-md'>
                     <div className='grid grid-cols-2 gap-2'>
                         <div>
                             <Label>Title</Label>
