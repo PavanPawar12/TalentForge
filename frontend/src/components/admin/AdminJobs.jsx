@@ -2,7 +2,7 @@ import React from 'react'
 import Navbar from '../shared/Navbar'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
-import { useNavigate } from 'react-router-dom'
+import { Links, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
@@ -27,7 +27,8 @@ const AdminJobs = () => {
                     className="w-fit"
                     placeholder="filter by role"
                     onChange={(e) => setInput(e.target.value)}
-                />
+                /> 
+                {/* <Button onClick={() => navigate("/admin/jobs")}>New Jobs</Button> */}
                 <Button onClick={() => navigate("/admin/jobs/create")}>New Jobs</Button>
             </div>
             <AdminJobTable/>
