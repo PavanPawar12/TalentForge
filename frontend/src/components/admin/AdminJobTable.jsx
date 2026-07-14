@@ -20,11 +20,11 @@ import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
 const AdminJobTable = () => {
-  const { allAdminJobs = [] } = useSelector((store) => store.job);
+  const { allAdminJobs = []} = useSelector((store) => store.job);
   const { searchCompanyByText } = useSelector((store) => store.company);
   const [filterJobs, setFilterJobs] = useState([]);
 
-  console.log(searchCompanyByText)
+  // console.log(searchCompanyByText)
   
   
   const navigate = useNavigate();
@@ -33,22 +33,18 @@ const AdminJobTable = () => {
     const filteredJobs = allAdminJobs.filter((job) => {
       if (!searchCompanyByText) return true;
 
-      return job.title
-        ?.toLowerCase()
-        .includes(searchCompanyByText.toLowerCase());
+      return job?.title?.toLowerCase().includes(searchCompanyByText.toLowerCase());
     });
-    
 
     setFilterJobs(filteredJobs);
     }, [allAdminJobs, searchCompanyByText]);
-    console.log(allAdminJobs);
-    console.log(allAdminJobs[0]?.company);
+   
   return (
     <Table>
       <TableCaption>
         A list of your recently posted jobs
       </TableCaption>
-
+      
       <TableHeader>
         <TableRow>
           <TableHead>Company</TableHead>
