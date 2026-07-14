@@ -21,7 +21,6 @@ const jobSlice = createSlice({
         setSearchJobByText: (state, action) => {
             state.searchJobByText = action.payload;
         }
-
     }
 });
 export const { setAlljobs, setSingleJob, setAllAdminJobs, setSearchJobByText}  = jobSlice.actions;
