@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { toast } from 'sonner';
 import { useDispatch, useSelector } from 'react-redux';
 import { setLoading } from '../../redux/authSlice.js';
+import { Loader2 } from 'lucide-react';
 const SignUp = () => {
 
   const [input, setInput] = useState({
@@ -57,6 +58,7 @@ const SignUp = () => {
         navigate("/login")
         toast.success(res.data.message);
       }
+
     } catch (error) {
       console.log(error);
 

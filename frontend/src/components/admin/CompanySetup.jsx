@@ -63,7 +63,7 @@ const CompanySetup = () => {
           toast.success(res.data.message);
           navigate("/admin/companies");
         }
-        console.log(res)
+        // console.log(res)
     } catch (error) {
       console.log(error)
       toast.error(error.response.data.message || "Something went wrong");
@@ -79,7 +79,7 @@ const CompanySetup = () => {
       website:singleCompany?.website ||  "",
       location: singleCompany?.location ||  "",
       file: singleCompany?.file ||  null // if needed
-    })
+    })  
   },[singleCompany])
 
   return (

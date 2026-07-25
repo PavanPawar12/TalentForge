@@ -18,8 +18,7 @@ const useGetApplicants = (jobId) => {
                         withCredentials: true,
                     }
                 );
-                console.log("Response:", res.data);
-                console.log("Success:", res.data.success);
+
                 if (res.data.success) {
                     dispatch(setApplicants(res.data.job));
                 } 

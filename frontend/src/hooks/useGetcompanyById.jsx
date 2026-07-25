@@ -5,7 +5,7 @@ import axios from 'axios'
 import { useDispatch } from 'react-redux'
 import { setSingleCompany } from '../redux/companySclice'
 const useGetCompanyById = (companyId) => {
-    console.log("Company ID:", companyId);
+    // console.log("Company ID:", companyId);
     const dispatch = useDispatch();
     useEffect(()=> {
         const fetchSingleCompany = async () => {

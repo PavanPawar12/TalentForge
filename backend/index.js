@@ -7,7 +7,10 @@ import userRouter from './routes/user.routes.js'
 import companyRoute from './routes/compay.routes.js'
 import jobRouter from './routes/job.routes.js'
 import applicationRoute from './routes/application.routes.js'
+import dns from 'dns'
 // import cloudinary from './utils/cloudinary.js';
+
+dns.setServers(["1.1.1.1", "8.8.8.8"]);
 dotenv.config({});
 // console.log(process.env.MONGO_URI);
 const app = express();
@@ -21,6 +24,8 @@ const app = express();
 //         console.log("❌ Cloudinary Ping Error:", error);
 //     }
 // })(); 
+
+console.log("MongoURL: ", process.env.MONGO_URI);
 
 app.get('/', (req, res) => {
     return res.status(200).json({
