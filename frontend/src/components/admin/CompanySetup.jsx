@@ -9,7 +9,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import axios from 'axios'
 import { useSelector } from 'react-redux'
-import useGetCompanyById from '@/hooks/useGetCompanyById';
+import useGetCompanyById from '../../hooks/useGetcompanyById.jsx'
 const CompanySetup = () => {
   // const [companyName, setCompanyName] = useState("");
   const params = useParams();
