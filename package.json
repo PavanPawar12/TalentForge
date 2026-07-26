@@ -7,7 +7,9 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon index.js",
+    "dev": "nodemon backend/index.js",
+    "build": "npm install && npm install --prefix frontend && npm run build --prefix frontend",
+    "start": "node backend/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -17,10 +19,12 @@
     "cors": "^2.8.6",
     "datauri": "^4.1.0",
     "dotenv": "^17.4.2",
-    "express": "^5.2.1",
+    "express": "^4.22.2",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.7.2",
-    "multer": "^2.2.0",
+    "multer": "^2.2.0"
+  },
+  "devDependencies": {
     "nodemon": "^3.1.14"
   }
 }

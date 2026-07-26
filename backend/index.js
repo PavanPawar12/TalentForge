@@ -8,13 +8,14 @@ import companyRoute from './routes/compay.routes.js'
 import jobRouter from './routes/job.routes.js'
 import applicationRoute from './routes/application.routes.js'
 import dns from 'dns'
+import path from 'path'
 // import cloudinary from './utils/cloudinary.js';
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 dotenv.config({});
-// console.log(process.env.MONGO_URI);
-const app = express();
 
+const app = express();
+const __dirname = path.resolve();
 // Test Cloudinary connection
 // (async () => {
 //     try {
@@ -25,14 +26,13 @@ const app = express();
 //     }
 // })(); 
 
-console.log("MongoURL: ", process.env.MONGO_URI);
 
-app.get('/', (req, res) => {
-    return res.status(200).json({
-        message:"I am comming from backend",
-        success: true
-    })
-})
+// app.get('/', (req, res) => {
+//     return res.status(200).json({
+//         message:"I am comming from backend",
+//         success: true
+//     })
+// })
 
 // console.log("Cloud Name:", process.env.CLOUD_NAME);
 // console.log("API Key:", process.env.API_KEY);
@@ -54,6 +54,10 @@ app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRoute);
 
+app.use(express.static(path.join(__dirname, "/frontend/dist")));
+app.get('*', (_,res) => {
+    res.sendFile(path.resolve(__dirname, "frontend", "dist", "index.html"))
+})
 
 const PORT = process.env.PORT || 3000;
 
