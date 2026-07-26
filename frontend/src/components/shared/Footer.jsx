@@ -1,36 +1,3 @@
-// import React from 'react'
-
-// const Footer = () => {
-//   return (
-//     <div>
-//       <footer>
-//         <div>
-//             <div>
-//                 <div>
-//                     <h2>Job Hunt</h2>
-//                     <p>Your componey. All rights reserved.</p>
-//                 </div>
-//                 <div>
-//                     {/* <a href="">
-//                         <svg/>
-//                     </a>
-//                     <a href="">
-//                         <svg/>
-//                     </a>
-//                     <a href="">
-//                         <svg/>
-//                     </a> */}
-//                 </div>
-//             </div>
-//         </div>
-//       </footer>
-//     </div>
-//   )
-// }
-
-// export default Footer
-
-
 import React from "react";
 import { FaFacebookF, FaTwitter, FaLinkedinIn, FaInstagram } from "react-icons/fa";
 
