@@ -18,7 +18,7 @@ const Jobs = () => {
             <FilterCard />
             </div>
               {
-                allJobs.length <= 0 ? <span>Jon not found</span> :(
+                allJobs.length <= 0 ? <span>job not found</span> :(
                   <div className="flex-1 h-[88vh] overflow-auto pb-5">
                     <div className="grid grid-cols-3 gap-4">
                         {
