@@ -12,7 +12,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setLoading } from '../../redux/authSlice.js';
 import { Loader2 } from 'lucide-react';
 
-    import heroImage from "../../assets/jobhero.png"; // your image
+import heroImage from "../../assets/jobhero.png"; // your image
 const SignUp = () => {
 
   const [input, setInput] = useState({
