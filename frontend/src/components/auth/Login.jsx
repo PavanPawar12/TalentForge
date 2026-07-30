@@ -138,23 +138,9 @@ const Login = () => {
           {/* Right */}
           <div className="p-8 lg:p-12">
             <div className="mb-8">
-              <h1 className="text-4xl font-bold">Create Account</h1>
+              <h1 className="text-4xl font-bold">Login</h1>
               <p className="text-gray-500 mt-2">Welcome to TalentForge</p>
             </div>
-
-            <form onSubmit={submitHandler} className="space-y-5">
-              <div>
-                <Label>Full Name</Label>
-                <Input
-                  className="h-12 rounded-xl mt-2"
-                  type="text"
-                  name="fullname"
-                  value={input.fullname}
-                  onChange={changeEventHandler}
-                  placeholder="Enter your full name"
-                />
-              </div>
-
               <div>
                 <Label>Email</Label>
                 <Input
@@ -166,19 +152,6 @@ const Login = () => {
                   placeholder="Enter your email"
                 />
               </div>
-
-              <div>
-                <Label>Phone Number</Label>
-                <Input
-                  className="h-12 rounded-xl mt-2"
-                  type="tel"
-                  name="phoneNumber"
-                  value={input.phoneNumber}
-                  onChange={changeEventHandler}
-                  placeholder="Enter phone number"
-                />
-              </div>
-
               <div>
                 <Label>Password</Label>
                 <Input
@@ -233,26 +206,7 @@ const Login = () => {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label>Profile Photo</Label>
-                  <Input
-                    className="mt-2 rounded-xl cursor-pointer"
-                    type="file"
-                    accept="image/*"
-                    // onChange={chanageFileHandler}
-                  />
-                </div>
-
-                <div>
-                  <Label>Resume</Label>
-                  <Input
-                    className="mt-2 rounded-xl cursor-pointer"
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                  />
-                </div>
-              </div>
+  
 
               {loading ? (
                 <Button className="w-full h-12 rounded-xl">
@@ -261,7 +215,7 @@ const Login = () => {
                 </Button>
               ) : (
                 <Button className="w-full h-12 rounded-xl bg-[#6A38C2] hover:bg-[#5b2fb0]">
-                  Create Account
+                  login
                 </Button>
               )}
 
