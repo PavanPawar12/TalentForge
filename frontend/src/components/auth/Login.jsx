@@ -115,10 +115,8 @@ const Login = () => {
           }
           <span>Don't have an account? <Link to='/signup' className='text-blue-400'>Signup</Link></span>
         </form>
-
       </div>
     </div>
-   
   );
 };
 
