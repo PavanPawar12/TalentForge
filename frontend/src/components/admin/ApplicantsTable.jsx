@@ -84,6 +84,8 @@
 
 import React from "react";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import { toast } from "sonner";
 
 import {
   Table,
@@ -93,9 +95,40 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
+import { APPLICATION_API_END_POINT } from "../utils/constant";
+
+const statusColor = (status) => {
+  switch (status) {
+    case "accepted":
+      return "bg-green-100 text-green-700 border-green-200";
+    case "rejected":
+      return "bg-red-100 text-red-700 border-red-200";
+    default:
+      return "bg-yellow-100 text-yellow-700 border-yellow-200";
+  }
+};
 
 const ApplicantsTable = () => {
   const { applicants } = useSelector((store) => store.application);
+
+  const statusUpdateHandler = async (applicationId, status) => {
+    try {
+      const res = await axios.post(
+        `${APPLICATION_API_END_POINT}/status/${applicationId}/update`,
+        { status },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      if (res.data.success) {
+        toast.success(res.data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message || "Failed to update status");
+    }
+  };
 
   return (
     <div className="rounded-md border">
@@ -138,7 +171,8 @@ const ApplicantsTable = () => {
                 <TableCell>
                   <select
                     defaultValue={item.status}
-                    className="border rounded-md px-2 py-1 outline-none"
+                    onChange={(e) => statusUpdateHandler(item._id, e.target.value)}
+                    className={`border rounded-md px-2 py-1 outline-none capitalize ${statusColor(item.status)}`}
                   >
                     <option value="pending">Pending</option>
                     <option value="accepted">Accepted</option>

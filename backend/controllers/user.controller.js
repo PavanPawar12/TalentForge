@@ -1,13 +1,20 @@
 import { User } from '../models/user.models.js'
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken'
-// import getDataUri from "../utils/datauri.js";
-// import cloudinary from '../utils/cloudinary.js';
+import getDataUri from "../utils/datauri.js";
+import cloudinary from '../utils/cloudinary.js';
+
+const getCookieOptions = () => ({
+    maxAge: 24 * 60 * 60 * 1000,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+});
+
 export const register = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, password, role } = req.body;
-        console.log("filled data: ",fullname, email, phoneNumber, password, role);
-    
 
         if (!fullname || !email || !phoneNumber || !password || !role) {
             return res.status(400).json({
@@ -15,7 +22,14 @@ export const register = async (req, res) => {
                 success: false
             });
         };
-        // console.log(req.body)
+
+        if (!['student', 'recruiter'].includes(role)) {
+            return res.status(400).json({
+                message: "Role must be either student or recruiter",
+                success: false
+            });
+        }
+
         const user = await User.findOne({ email });
         if (user) {
             return res.status(409).json({
@@ -26,13 +40,42 @@ export const register = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Optional profile photo upload (field name: "file")
+        let profilePhoto = "";
+        if (req.file) {
+            // Only accept images for profile photo at registration
+            if (!req.file.mimetype.startsWith("image/")) {
+                return res.status(400).json({
+                    message: "Profile photo must be an image file",
+                    success: false
+                });
+            }
+            const fileUri = getDataUri(req.file);
+            let cloudResponse;
+            try {
+                cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                    resource_type: "image",
+                    folder: "talentforge/profiles",
+                });
+            } catch (uploadError) {
+                console.log("Profile photo upload failed:", uploadError);
+                return res.status(502).json({
+                    message: "Profile photo upload failed. Please try again without a photo or contact support.",
+                    success: false
+                });
+            }
+            profilePhoto = cloudResponse.secure_url;
+        }
+
         await User.create({
             fullname,
             email,
             phoneNumber,
             password: hashedPassword,
-            role
-            // profile
+            role,
+            profile: {
+                profilePhoto
+            }
         })
 
         return res.status(201).json({
@@ -41,6 +84,10 @@ export const register = async (req, res) => {
         });
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            success: false
+        });
     }
 
 }
@@ -97,11 +144,7 @@ export const login = async (req, res) => {
         }
 
         return res.status(200)
-            .cookie("token", token, {
-                maxAge: 24 * 60 * 60 * 1000,
-                httpOnly: true,
-                sameSite: "strict"
-            })
+            .cookie("token", token, getCookieOptions())
             .json({
                 message: `Welcome back ${user.fullname}`,
                 user,
@@ -118,14 +161,17 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
-        // console.log("Something is showing: ", req.body);
-        return res.status(200).cookie("token", "", { maxAge: 0 }).json({
+        return res.status(200).clearCookie("token", getCookieOptions()).json({
             message: "Logged out successfully",
             success: true,
 
         })
     } catch (error) {
         console.log(error)
+        return res.status(500).json({
+            message: "Internal Server Error",
+            success: false
+        });
     }
 }
 
@@ -133,52 +179,70 @@ export const updateProfile = async (req, res) => {
     try {
         const { fullname, email, phoneNumber, bio, skills } = req.body;
 
-
-
-        // const file = req.file;
-        // // console.log("req.file:", file);
-
-        // let cloudResponse = null;
-
-        // if (file) {
-        //     const fileUri = getDataUri(file);
-        //     console.log("Data URI:", fileUri);
-
-        //     cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
-        //         resource_type: "auto",
-        //     });
-
-        //     // console.log("Cloudinary Response:", cloudResponse);
-        // }
-
-
-
-
-        // console.log(req.file);
-        // console.log(res.body);
         const userId = req.id; // middleware authentication
 
         let user = await User.findById(userId);
         if (!user) {
-            return res.status(400).json({
+            return res.status(404).json({
                 message: "User not found",
                 success: false
             });
         }
 
+        // Prevent email duplication when changing email
+        if (email && email !== user.email) {
+            const emailTaken = await User.findOne({ email });
+            if (emailTaken) {
+                return res.status(409).json({
+                    message: "This email is already in use",
+                    success: false
+                });
+            }
+            user.email = email;
+        }
+
+        // Optional file upload (field name: "file").
+        // Single-file upload: PDFs/docs are stored as resume,
+        // images are stored as profile photo.
+        if (req.file) {
+            const fileUri = getDataUri(req.file);
+            const isResume = req.file.mimetype === "application/pdf" ||
+                req.file.mimetype === "application/msword" ||
+                req.file.mimetype === "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+            if (isResume) {
+                const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                    resource_type: "raw",
+                    folder: "talentforge/resumes",
+                });
+                user.profile.resume = cloudResponse.secure_url; // save the cloudinary url
+                user.profile.resumeOriginalName = req.file.originalname; // Save the original file name
+            } else if (req.file.mimetype.startsWith("image/")) {
+                const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                    resource_type: "image",
+                    folder: "talentforge/profiles",
+                });
+                user.profile.profilePhoto = cloudResponse.secure_url;
+            } else {
+                return res.status(400).json({
+                    message: "Unsupported file type. Upload an image or a PDF/DOC resume.",
+                    success: false
+                });
+            }
+        }
+
         // updating data
         if (fullname) user.fullname = fullname
-        if (email) user.email = email
         if (phoneNumber) user.phoneNumber = phoneNumber
-        if (bio) user.profile.bio = bio
-        if (skills) {
-            user.profile.skills = skills.split(",");
+        if (bio !== undefined) user.profile.bio = bio
+        if (skills !== undefined) {
+            const skillsArray = Array.isArray(skills)
+                ? skills
+                : String(skills).split(",");
+            user.profile.skills = skillsArray
+                .map((s) => String(s).trim())
+                .filter((s) => s.length > 0);
         }
-        // resume comes later here  ??? when we setup cloudinary
-        // if (cloudResponse) {
-        //     user.profile.resume = cloudResponse.secure_url // save the cloudinary url 
-        //     user.profile.resumeOriginalName = file.originalname // Save the original file name
-        // }
         await user.save();
 
         const updatedUser = {

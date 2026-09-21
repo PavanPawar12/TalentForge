@@ -1,5 +1,6 @@
-// import dotenv from "dotenv";
-// dotenv.config();
+// Load env first: this module reads CLOUD_* at import time, and ES module
+// imports are hoisted before dotenv.config() in backend/index.js runs.
+import 'dotenv/config';
 
 import { v2 as cloudinary } from "cloudinary";
 

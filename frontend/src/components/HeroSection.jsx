@@ -26,12 +26,30 @@
 // export default HeroSection
 
 
-import React from "react";
+import React, { useState } from "react";
 import heroBg from "../assets/jobhero.png"
 import { Button } from "./ui/button";
 import { Search } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setSearchJobByText } from "../redux/jobSlice";
 
 const HeroSection = () => {
+  const [query, setQuery] = useState("");
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const searchHandler = () => {
+    dispatch(setSearchJobByText(query));
+    navigate("/browse");
+  };
+
+  const keyHandler = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      searchHandler();
+    }
+  };
   return (
     <section
       className="relative min-h-[90vh] bg-cover bg-center bg-no-repeat flex items-center"
@@ -62,10 +80,12 @@ const HeroSection = () => {
             <input
               type="text"
               placeholder="Find your dream job..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={keyHandler}
               className="flex-1 px-6 py-4 outline-none"
             />
-
-            <Button className="rounded-none rounded-r-full bg-[#6A38C2] hover:bg-[#5b2fb0] px-6">
+            <Button onClick={searchHandler} className="rounded-l-none rounded-r-full bg-[#6A38C2] px-6">
               <Search className="h-5 w-5" />
             </Button>
           </div>

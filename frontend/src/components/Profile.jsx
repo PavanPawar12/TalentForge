@@ -24,7 +24,7 @@ const Profile = () => {
                     <div className='flex items-center gap-4'>
 
                         <Avatar className="h-24 w-24 ">
-                            <AvatarImage src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTILstzE4n4jxRaa2LcTb5Uf_JKLVtXIZjL3w&s" alt="alt" />
+                            <AvatarImage src={user?.profile?.profilePhoto || "https://github.com/shadcn.png"} alt={user?.fullname || "profile"} />
                         </Avatar>
                         <div>
                             <h1 className='font-medium text-xl'>{user?.fullname}</h1>
@@ -48,7 +48,7 @@ const Profile = () => {
                         <h1>Skills</h1>
                         <div className='flex items-center gap-1'>
                             {
-                                user?.profile?.skills.length != 0 ? user?.profile?.skills.map((item, index) => <Badge key={index}>{item}</Badge>) : <span>NA</span>
+                                user?.profile?.skills?.length > 0 ? user?.profile?.skills.map((item, index) => <Badge key={index}>{item}</Badge>) : <span>NA</span>
                             }
                         </div>
                     </div>
@@ -73,8 +73,8 @@ const Profile = () => {
                     </div>
                 </div>
             </div>
-            <div className='max-w-4xl mx-auto bg-white rounded-2xl'>
-                <h1>All applied job</h1>
+            <div className='max-w-4xl mx-auto bg-white rounded-2xl p-4'>
+                <h1 className='font-bold text-lg mb-2'>Applied Jobs</h1>
                 {/* application job */}
                 <AppliedJobTable />
             </div>

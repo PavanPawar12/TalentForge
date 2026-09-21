@@ -1,13 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Navbar from "../shared/Navbar";
 import ApplicantsTable from "./ApplicantsTable";
 import { useParams } from "react-router-dom";
-import { useDispatch } from "react-redux";
 import useGetApplicants from "@/hooks/useGetApplicants";
 
 const Applicants = () => {
     const { id } = useParams();
-    console.log("Applicants: ", id)
 
     useGetApplicants(id);
 

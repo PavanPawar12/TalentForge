@@ -15,19 +15,37 @@ import {
   PopoverTrigger,
 } from "../ui/popover";
 
-import { Edit2, Eye, MoreHorizontal } from "lucide-react";
+import { Edit2, Eye, MoreHorizontal, Trash2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { toast } from "sonner";
+import { JOB_API_END_POINT } from "../utils/constant";
 
 const AdminJobTable = () => {
   const { allAdminJobs = []} = useSelector((store) => store.job);
   const { searchCompanyByText } = useSelector((store) => store.company);
   const [filterJobs, setFilterJobs] = useState([]);
 
-  // console.log(searchCompanyByText)
-  
-  
   const navigate = useNavigate();
+
+  const deleteHandler = async (jobId) => {
+    if (!window.confirm("Are you sure you want to delete this job? This will also remove its applications.")) {
+      return;
+    }
+    try {
+      const res = await axios.delete(`${JOB_API_END_POINT}/delete/${jobId}`, { withCredentials: true });
+      if (res.data.success) {
+        toast.success(res.data.message);
+        // Refresh list by removing deleted job locally is handled on next fetch;
+        // simplest reliable refresh:
+        window.location.reload();
+      }
+    } catch (error) {
+      console.log(error);
+      toast.error(error.response?.data?.message || "Failed to delete job");
+    }
+  };
 
   useEffect(() => {
     const filteredJobs = allAdminJobs.filter((job) => {
@@ -79,17 +97,27 @@ const AdminJobTable = () => {
                     <MoreHorizontal className="cursor-pointer" />
                   </PopoverTrigger>
 
-                  <PopoverContent className="w-32">
+                  <PopoverContent className="w-36">
                     <div
-                      onClick={() => navigate(`/admin/jobs/${job._id}`)}
-                      className="flex items-center gap-2 cursor-pointer"
-                    > 
+                      onClick={() => navigate(`/admin/jobs/${job._id}/edit`)}
+                      className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded"
+                    >
                       <Edit2 className="w-4 h-4" />
                       <span>Edit</span>
                     </div>
-                    <div onClick={() => navigate(`/admin/jobs/${job._id}/applicant`)}>
-                      <Eye className="m-4"/>
+                    <div
+                      onClick={() => navigate(`/admin/jobs/${job._id}/applicant`)}
+                      className="flex items-center gap-2 cursor-pointer p-1 hover:bg-gray-100 rounded"
+                    >
+                      <Eye className="w-4 h-4"/>
                       <span>Applicants</span>
+                    </div>
+                    <div
+                      onClick={() => deleteHandler(job._id)}
+                      className="flex items-center gap-2 cursor-pointer p-1 hover:bg-red-50 text-red-600 rounded"
+                    >
+                      <Trash2 className="w-4 h-4"/>
+                      <span>Delete</span>
                     </div>
 
                   </PopoverContent>

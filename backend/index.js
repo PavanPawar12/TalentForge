@@ -44,10 +44,11 @@ app.use(cookieParser());
 
 const corsOptions = {
 
-    origin:[
-        "http://localhost:5173",
-        'https://talentforge-8ag4.onrender.com'
-
+    origin: process.env.FRONTEND_URL
+        ? process.env.FRONTEND_URL.split(",").map((url) => url.trim())
+        : [
+            "http://localhost:5173",
+            'https://talentforge-8ag4.onrender.com'
         ],
     credentials:true
 } 
@@ -58,6 +59,14 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/company", companyRoute);
 app.use("/api/v1/job", jobRouter);
 app.use("/api/v1/application", applicationRoute);
+
+// JSON 404 for unknown API routes (keeps axios error handling consistent)
+app.use("/api", (_, res) => {
+    return res.status(404).json({
+        message: "API route not found",
+        success: false
+    });
+});
 
 app.use(express.static(path.join(__dirname, "/frontend/dist")));
 app.get('*', (_,res) => {

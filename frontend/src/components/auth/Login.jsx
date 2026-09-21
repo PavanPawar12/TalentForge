@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../shared/Navbar";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,6 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { setLoading, setUser } from "../../redux/authSlice.js";
 import { Loader2 } from "lucide-react";
-import heroImage from "../../assets/jobhero.png";
 
 const Login = () => {
   const [input, setInput] = useState({
@@ -20,9 +19,15 @@ const Login = () => {
     role: "",
   });
 
-  const { loading } = useSelector((store) => store.auth);
+  const { loading, user } = useSelector((store) => store.auth);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (user) {
+      navigate(user.role === 'recruiter' ? "/admin/companies" : "/");
+    }
+  }, [user, navigate]);
 
   const changeEventHandler = (e) => {
     setInput({ ...input, [e.target.name]: e.target.value });
@@ -30,6 +35,10 @@ const Login = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    if (!input.role) {
+      toast.error("Please select a role");
+      return;
+    }
     try {
       dispatch(setLoading(true));
       const res = await axios.post(`${USER_API_END_POINT}/login`, input, {
@@ -39,15 +48,14 @@ const Login = () => {
         withCredentials: true,
       });
 
-      // console.log(res.data)
       if (res.data.success) {
         dispatch(setUser(res.data.user));
-        navigate("/");
+        navigate(res.data.user?.role === 'recruiter' ? "/admin/companies" : "/");
         toast.success(res.data.message);
       }
     } catch (error) {
       console.log(error);
-      toast.error(error.response.data.message);
+      toast.error(error.response?.data?.message || "Login failed. Please try again.");
     } finally {
       dispatch(setLoading(false));
     }
@@ -61,8 +69,8 @@ const Login = () => {
 
           <div className='my-2'>
             <Label>Email</Label>
-            <input
-              type="Email"
+            <Input
+              type="email"
               value={input.email}
               name="email"
               onChange={changeEventHandler}
@@ -72,7 +80,7 @@ const Login = () => {
 
           <div className='my-2'>
             <Label>Password</Label>
-            <input
+            <Input
               type="password"
               value={input.password}
               name="password"

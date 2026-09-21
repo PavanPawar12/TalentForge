@@ -22,6 +22,11 @@ const persistConfig = {
     key: 'root',
     version: 1,
     storage,
+    // Only the login session survives a reload. Jobs, companies and
+    // applications are refetched on every page mount — persisting them
+    // (and the search filter text) shows stale results and hides newly
+    // posted jobs/companies.
+    whitelist: ['auth'],
 }
 
 

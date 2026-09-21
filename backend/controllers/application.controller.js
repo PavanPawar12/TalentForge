@@ -1,14 +1,15 @@
 import { Application } from "../models/application.model.js";
 import { Job } from "../models/job.model.js";
+import mongoose from "mongoose";
 
 export const applyJob = async (req, res) => {
     try {
         const userId = req.id;
         const jobId = req.params.id;
 
-        if (!jobId) {
+        if (!jobId || !mongoose.Types.ObjectId.isValid(jobId)) {
             return res.status(400).json({
-                message: "Job id is required",
+                message: "Valid Job id is required",
                 success: false
             })
         };
@@ -47,6 +48,10 @@ export const applyJob = async (req, res) => {
         })
     } catch (error) {
         console.log(error)
+        return res.status(500).json({
+            message: "Internal Server Error",
+            success: false
+        });
     }
 }
 
@@ -77,6 +82,10 @@ export const getAppliedJobs = async (req, res) => {
 
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: "Internal Server Error",
+            success: false
+        });
     }
 }
 
@@ -107,6 +116,10 @@ export const getApplicants = async (req, res) => {
         
     } catch (error) {
         console.log(error)
+        return res.status(500).json({
+            message: "Internal Server Error",
+            success: false
+        });
     }
 }
 
@@ -117,14 +130,22 @@ export const updateStatus = async (req, res) => {
         const applicationId = req.params.id;
 
          if (!status) {
-            return res.status(404).json({
+            return res.status(400).json({
                 message: "Status is required",
                 success: false
             })
         }
 
+        const normalizedStatus = String(status).toLowerCase();
+        if (!['pending', 'accepted', 'rejected'].includes(normalizedStatus)) {
+            return res.status(400).json({
+                message: "Invalid status. Must be pending, accepted or rejected",
+                success: false
+            })
+        }
+
         // find the application by applicantion id
-        const application = await Application.findById(applicationId);
+        const application = await Application.findById(applicationId).populate('job');
 
          if (!application) {
             return res.status(404).json({
@@ -132,9 +153,17 @@ export const updateStatus = async (req, res) => {
                 success: false
             })
         }
+
+        // Only the recruiter who posted the job can update the status
+        if (!application.job || application.job.created_by.toString() !== req.id) {
+            return res.status(403).json({
+                message: "You are not authorized to update this application",
+                success: false
+            })
+        }
         // update the status
 
-        application.status = status.toLowerCase();
+        application.status = normalizedStatus;
         await application.save();
         
         return res.status(200).json({
@@ -143,5 +172,9 @@ export const updateStatus = async (req, res) => {
             })
     } catch (error) {
         console.log(error)
+        return res.status(500).json({
+            message: "Internal Server Error",
+            success: false
+        });
     }
 }

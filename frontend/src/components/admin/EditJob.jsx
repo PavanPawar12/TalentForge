@@ -1,18 +1,18 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Navbar from '../shared/Navbar'
 import { Label } from '../ui/label'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '../ui/select'
-import { useSelector } from 'react-redux'
 import axios from 'axios'
 import { JOB_API_END_POINT } from '../utils/constant.js'
 import { toast } from 'sonner'
-import { useNavigate } from 'react-router-dom'
-import useGetAllCompanies from '../../hooks/useGetAllCompanies.jsx'
+import { useNavigate, useParams } from 'react-router-dom'
 
-const PostJob = () => {
-    useGetAllCompanies();
+const EditJob = () => {
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [input, setInput] = useState({
         title: "",
         description: "",
@@ -21,68 +21,79 @@ const PostJob = () => {
         location: "",
         jobType: "",
         experience: "",
-        position: 1,
-        companyId: ""
-    })
-    const navigation = useNavigate()
-    const { companies } = useSelector(store => store.company);
+        position: ""
+    });
+
+    useEffect(() => {
+        const fetchJob = async () => {
+            try {
+                const res = await axios.get(`${JOB_API_END_POINT}/get/${id}`, { withCredentials: true });
+                if (res.data.success) {
+                    const job = res.data.job || res.data.jobs;
+                    setInput({
+                        title: job.title || "",
+                        description: job.description || "",
+                        requirements: Array.isArray(job.requirements) ? job.requirements.join(", ") : (job.requirements || ""),
+                        salary: job.salary || "",
+                        location: job.location || "",
+                        jobType: job.jobType || "",
+                        experience: job.experienceLevel || "",
+                        position: job.position || ""
+                    });
+                }
+            } catch (error) {
+                console.log(error);
+                toast.error(error.response?.data?.message || "Failed to load job");
+                navigate("/admin/jobs");
+            } finally {
+                setLoading(false);
+            }
+        };
+        if (id) fetchJob();
+    }, [id, navigate]);
+
     const changeEventHandler = (e) => {
         setInput({ ...input, [e.target.name]: e.target.value });
     };
 
-    const submitHandler = async(e) => {
+    const submitHandler = async (e) => {
         e.preventDefault();
-        const requiredFields = [
-            ["title", "Title"],
-            ["description", "Description"],
-            ["requirements", "Requirements"],
-            ["salary", "Salary"],
-            ["location", "Location"],
-            ["jobType", "Job Type"],
-            ["experience", "Experience Level"],
-            ["position", "No of Positions"],
-            ["companyId", "Company"],
-        ];
-        const empty = requiredFields.find(([key]) => {
-            const value = input[key];
-            return value === undefined || value === null || String(value).trim() === "";
-        });
-        if (empty) {
-            toast.error(empty[1] === "Company" ? "Please select a company" : `Please fill in ${empty[1]}`);
-            return;
-        }
-        if (!Number.isFinite(Number(input.salary)) || !Number.isFinite(Number(input.experience))) {
-            toast.error("Salary and Experience must be valid numbers");
-            return;
-        }
-        if (!Number.isFinite(Number(input.position)) || Number(input.position) < 1) {
-            toast.error("No of Positions must be at least 1");
-            return;
-        }
         try {
-            const res = await axios.post(`${JOB_API_END_POINT}/post`, input, {
-                headers:{
+            setSaving(true);
+            const res = await axios.put(`${JOB_API_END_POINT}/update/${id}`, input, {
+                headers: {
                     "Content-Type": "application/json"
                 },
-                withCredentials:true,
+                withCredentials: true,
             });
-            
-            console.log(res)
-            if(res.data.success) {
+            if (res.data.success) {
                 toast.success(res.data.message);
-                navigation("/admin/jobs")
+                navigate("/admin/jobs");
             }
         } catch (error) {
             console.log(error);
-            toast.error(error.response?.data?.message || "Something went wrong")
+            toast.error(error.response?.data?.message || "Failed to update job");
+        } finally {
+            setSaving(false);
         }
+    };
+
+    if (loading) {
+        return (
+            <div>
+                <Navbar />
+                <p className='text-center my-10 text-gray-500'>Loading job...</p>
+            </div>
+        );
     }
+
     return (
         <div>
             <Navbar />
-            <div className='flex items-center justify-center w-screen my-5'>
-                <form onSubmit={submitHandler} className='p-8 max-w-4xl border border-gray-200 shadow-lg rounded-md'>
-                    <div className='grid grid-cols-2 gap-2'>
+            <div className='flex items-center justify-center w-screen my-5 px-4'>
+                <form onSubmit={submitHandler} className='p-8 w-full max-w-4xl border border-gray-200 shadow-lg rounded-md'>
+                    <h1 className='font-bold text-xl mb-4'>Edit Job</h1>
+                    <div className='grid grid-cols-1 sm:grid-cols-2 gap-2'>
                         <div>
                             <Label>Title</Label>
                             <Input
@@ -104,7 +115,7 @@ const PostJob = () => {
                             />
                         </div>
                         <div>
-                            <Label>Requirements</Label>
+                            <Label>Requirements (comma separated)</Label>
                             <Input
                                 type="text"
                                 name="requirements"
@@ -114,9 +125,9 @@ const PostJob = () => {
                             />
                         </div>
                         <div>
-                            <Label>Salary</Label>
+                            <Label>Salary (LPA)</Label>
                             <Input
-                                type="text"
+                                type="number"
                                 name="salary"
                                 value={input.salary}
                                 onChange={changeEventHandler}
@@ -144,9 +155,9 @@ const PostJob = () => {
                             />
                         </div>
                         <div>
-                            <Label>Experience Level</Label>
+                            <Label>Experience Level (yrs)</Label>
                             <Input
-                                type="text"
+                                type="number"
                                 name="experience"
                                 value={input.experience}
                                 onChange={changeEventHandler}
@@ -154,7 +165,7 @@ const PostJob = () => {
                             />
                         </div>
                         <div>
-                            <Label>No of Position</Label>
+                            <Label>No of Positions</Label>
                             <Input
                                 type="number"
                                 name="position"
@@ -163,46 +174,16 @@ const PostJob = () => {
                                 className="focus-visible:ring-offset-0 focus-visible:ring-0 my-1"
                             />
                         </div>
-                        {
-                            companies.length > 0 && (
-                                <div>
-                                    <Label>Company</Label>
-
-                                    <Select
-                                        onValueChange={(value) =>
-                                            setInput({ ...input, companyId: value })
-                                        }
-                                    >
-                                        <SelectTrigger className=" w-full my-1">
-                                            <SelectValue placeholder="Select a Company" />
-                                        </SelectTrigger>
-
-                                        <SelectContent>
-                                            <SelectGroup>
-                                                {companies.map((company) => (
-                                                    <SelectItem
-                                                        key={company._id}
-                                                        value={company._id}
-                                                    >
-                                                        {company.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectGroup>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                            )
-                        }
                     </div>
 
-                    <Button className="w-full mt-4">Post New Job</Button>
-                    {
-                        companies.length === 0 && <p className='text-xs text-red-600 font-bold text-center my-3'>*Please register a company first, before posting a jobs</p>
-                    }
+                    <div className='flex gap-2 mt-4'>
+                        <Button type="button" variant="outline" className="w-full" onClick={() => navigate("/admin/jobs")}>Cancel</Button>
+                        <Button className="w-full" disabled={saving}>{saving ? "Saving..." : "Save Changes"}</Button>
+                    </div>
                 </form>
             </div>
         </div>
     )
 }
 
-export default PostJob
+export default EditJob

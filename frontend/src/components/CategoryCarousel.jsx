@@ -7,6 +7,9 @@ import {
   CarouselPrevious,
 } from "./ui/carousel";
 import { Button } from "./ui/button";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { setSearchJobByText } from "../redux/jobSlice";
 
 const category = [
   "Frontend Developer",
@@ -20,6 +23,14 @@ const category = [
 ];
 
 const CategoryCarousel = () => {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const categoryHandler = (cat) => {
+    dispatch(setSearchJobByText(cat));
+    navigate("/browse");
+  };
+
   return (
     <div className="w-full max-w-5xl mx-auto my-16 px-4">
       <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-10">
@@ -34,6 +45,7 @@ const CategoryCarousel = () => {
               className="md:basis-1/3 lg:basis-1/4 flex justify-center"
             >
               <Button
+                onClick={() => categoryHandler(cat)}
                 variant="outline"
                 className="rounded-full border-2 border-[#6A38C2] text-[#6A38C2] 
                 font-semibold px-6 py-3 text-sm md:text-base

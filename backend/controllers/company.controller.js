@@ -1,9 +1,10 @@
 import { Company } from "../models/company.model.js";
+import getDataUri from "../utils/datauri.js";
+import cloudinary from "../utils/cloudinary.js";
 
 export const registerCompany = async (req, res) => {
     try {
         const { companyName } = req.body;
-        console.log("Rquest is comming: ",req.body)
         if (!companyName) {
             return res.status(400).json({
                 message: "Company name is required",
@@ -25,15 +26,15 @@ export const registerCompany = async (req, res) => {
             userId: req.id
         });
 
-        return res.status(200).json({
-            message: "Company registeed successfully ",
+        return res.status(201).json({
+            message: "Company registered successfully ",
             company,
             success: true
         })
     } catch (error) {
         console.log(error)
         return res.status(500).json({
-        message: error.message,
+        message: "Internal Server Error",
         success: false,
     });
     }
@@ -42,14 +43,7 @@ export const registerCompany = async (req, res) => {
 export const getCompany = async (req, res) => {
     try {
         const userId = req.id; // logged in user id
-        const companies = await Company.find({ userId });
-
-        if (!companies) {
-            return res.status(400).json({
-                message: "companies not found",
-                success: false
-            })
-        }
+        const companies = await Company.find({ userId }).sort({ createdAt: -1 });
 
         return res.status(200).json({
             companies,
@@ -58,7 +52,7 @@ export const getCompany = async (req, res) => {
     } catch (error) {
         console.log(error);
         return res.status(500).json({
-            message: error.message,
+            message: "Internal Server Error",
             success: false
         });
     }
@@ -71,8 +65,8 @@ export const getCompanyById = async (req, res) => {
 
 
         if (!company) {
-            return res.status(400).json({
-                message: "companies not found",
+            return res.status(404).json({
+                message: "Company not found",
                 success: false
             })
         }
@@ -84,7 +78,7 @@ export const getCompanyById = async (req, res) => {
     } catch (error) {
          console.log(error);
         return res.status(500).json({
-            message: error.message,
+            message: "Internal Server Error",
             success: false
         });
 
@@ -96,19 +90,45 @@ export const updateCompany = async (req, res) => {
     try {
         const { name, description, website, location } = req.body;
 
-        const file = req.file;
+        const existingCompany = await Company.findById(req.params.id);
+        if (!existingCompany) {
+            return res.status(404).json({
+                message: "Company not found",
+                success: false
+            })
+        }
 
-        // claudinary comes here
-        
-        console.log(name, description, website, location)
+        // Only the recruiter who created the company can update it
+        if (existingCompany.userId.toString() !== req.id) {
+            return res.status(403).json({
+                message: "You are not authorized to update this company",
+                success: false
+            })
+        }
 
         const updateData = { name, description, website, location };
-        
-        const company = await Company.findByIdAndUpdate(req.params.id, updateData, { returnDocument: "after" });
+
+        // Company logo upload (field name: "file")
+        if (req.file) {
+            if (!req.file.mimetype.startsWith("image/")) {
+                return res.status(400).json({
+                    message: "Company logo must be an image file",
+                    success: false
+                });
+            }
+            const fileUri = getDataUri(req.file);
+            const cloudResponse = await cloudinary.uploader.upload(fileUri.content, {
+                resource_type: "image",
+                folder: "talentforge/logos",
+            });
+            updateData.logo = cloudResponse.secure_url;
+        }
+
+        const company = await Company.findByIdAndUpdate(req.params.id, updateData, { new: true, runValidators: true });
 
         if (!company) {
-            return res.status(400).json({
-                message: "companies not found",
+            return res.status(404).json({
+                message: "Company not found",
                 success: false
             })
         }
@@ -121,7 +141,7 @@ export const updateCompany = async (req, res) => {
     } catch (error) {
        console.log(error);
         return res.status(500).json({
-        message: error.message,
+        message: "Internal Server Error",
         success: false,
     });
     }

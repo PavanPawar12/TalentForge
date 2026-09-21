@@ -1,6 +1,6 @@
 
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -18,16 +18,30 @@ import  {toast}  from 'sonner';
 import { USER_API_END_POINT } from "./utils/constant";
 const UpdateProfileDialog = ({ open, setOpen }) => {
     const { user } = useSelector(store => store.auth);
+    const [loading, setLoading] = useState(false);
 
     const [input, setInput] = useState({
-        fullname: user?.fullname,
-        email: user?.email,
-        phoneNumber: user?.phoneNumber,
-        bio: user?.profile?.bio,
-        skills: user?.profile?.skills?.join(", ") || "",
-        // file:user?.profile?.resume
-        file:null
+        fullname: "",
+        email: "",
+        phoneNumber: "",
+        bio: "",
+        skills: "",
+        file: null
     });
+
+    // Sync form with latest user data every time the dialog opens
+    useEffect(() => {
+        if (open && user) {
+            setInput({
+                fullname: user?.fullname || "",
+                email: user?.email || "",
+                phoneNumber: user?.phoneNumber || "",
+                bio: user?.profile?.bio || "",
+                skills: user?.profile?.skills?.join(", ") || "",
+                file: null
+            });
+        }
+    }, [open, user]);
 
     const dispatch = useDispatch();
     const changeEventHandler = (e) => {
@@ -51,6 +65,7 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
           formData.append("file", input.file);
         }
         try {
+          setLoading(true);
           const res = await axios.post(`${USER_API_END_POINT}/profile/update`, formData, {
             headers : {
               'Content-Type': 'multipart/form-data'
@@ -64,10 +79,10 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
           }
         } catch (error) {
           console.log(error);
-          toast.error(error.response.data.message);
+          toast.error(error.response?.data?.message || "Failed to update profile");
+        } finally {
+          setLoading(false);
         }
-        // setOpen(false);
-        // console.log(input);
     }
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -155,15 +170,15 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
             />
           </div>
 
-          {/* Resume */}
+          {/* Resume / Photo (backend stores PDFs as resume, images as profile photo) */}
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="resume" className="text-right">
-              Resume
+            <Label htmlFor="file" className="text-right">
+              Resume / Photo
             </Label>
             <Input
-              id="resume"
+              id="file"
               type="file"
-              accept=".pdf,.doc,.docx"
+              accept="image/*,.pdf,.doc,.docx"
               className="col-span-3"
               onChange={fileChangeHandler}
             />
@@ -180,8 +195,8 @@ const UpdateProfileDialog = ({ open, setOpen }) => {
                 Cancel
             </Button>
 
-            <Button type="submit">
-              Update
+            <Button type="submit" disabled={loading}>
+              {loading ? "Updating..." : "Update"}
             </Button>
           </div>
         </form>
